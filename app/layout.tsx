@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "宠物肿瘤分诊",
-  description: "宠物肿瘤初步分诊建议",
+  title: "宠物肿瘤精细化检测",
+  description: "宠物肿瘤精细化检测方案",
 };
 
 export const viewport: Viewport = {
