@@ -419,10 +419,6 @@ export default function Home() {
 
   // 屏5：是否已提交
   const [submitted, setSubmitted] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<{
-    ok: boolean;
-    msg: string;
-  } | null>(null);
 
   // ---- 派生数据 ----
   const speciesForTumorList = basic.species || "";
@@ -519,7 +515,7 @@ export default function Home() {
 
     // 写入 Supabase
     try {
-      const { data, error } = await supabase.from("leads").insert({
+      const { error } = await supabase.from("leads").insert({
         pet_name: String(basic.petName || ""),
         species: String(basic.species || ""),
         breed: String(basic.breed || ""),
@@ -534,21 +530,10 @@ export default function Home() {
         consent: Boolean(basic.agreed),
       });
       if (error) {
-        setSubmitStatus({
-          ok: false,
-          msg: "提交失败：" + error.message,
-        });
-      } else {
-        setSubmitStatus({
-          ok: true,
-          msg: "提交成功！数据已写入 Supabase。",
-        });
+        console.error("提交失败：", error.message);
       }
-    } catch (err: any) {
-      setSubmitStatus({
-        ok: false,
-        msg: "网络异常：" + (err?.message || String(err)),
-      });
+    } catch (err) {
+      console.error("提交异常：", err);
     }
 
     setSubmitted(true);
@@ -1095,20 +1080,6 @@ export default function Home() {
                 以下是基于您选择生成的检测方案和科普摘要
               </p>
             </div>
-
-            {/* Supabase 提交状态（调试用） */}
-            {submitStatus && (
-              <div
-                className={
-                  "rounded-xl p-4 text-center text-sm " +
-                  (submitStatus.ok
-                    ? "border border-green-300 bg-green-50 text-green-800"
-                    : "border border-red-300 bg-red-50 text-red-800")
-                }
-              >
-                {submitStatus.msg}
-              </div>
-            )}
 
             {/* 宠物一句话总结 */}
             <div className="rounded-xl bg-white px-5 py-3 text-center text-sm font-medium text-gray-600 shadow-sm ring-1 ring-gray-100">
