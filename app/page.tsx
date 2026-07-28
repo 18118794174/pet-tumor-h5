@@ -10,6 +10,7 @@ import {
   hasHospitals,
   getHospitalsByCity,
 } from "@/lib/cities";
+import { supabase } from "@/lib/supabase";
 
 // ==================== 类型定义 ====================
 
@@ -500,15 +501,47 @@ export default function Home() {
     }
   };
 
-  const handleSubmit = (e?: FormEvent) => {
+  const handleSubmit = async (e?: FormEvent) => {
     if (e) e.preventDefault();
-    // 将最终城市/医院值写入 basic，供屏5展示或 Supabase 提交使用
+    const finalCity = getFinalCity();
+    const finalHospital = getFinalHospital();
+    // 将最终城市/医院值写入 basic，供屏5展示
     setBasic((prev) => ({
       ...prev,
-      city: getFinalCity(),
-      hospitalName: getFinalHospital(),
+      city: finalCity,
+      hospitalName: finalHospital,
       tumorTypeOther: tumorTypeOther,
     }));
+
+    // 写入 Supabase
+    try {
+      const { data, error } = await supabase.from("leads").insert({
+        pet_name: String(basic.petName || ""),
+        species: String(basic.species || ""),
+        breed: String(basic.breed || ""),
+        age: basic.age ? Number(basic.age) : null,
+        city: finalCity,
+        hospital_name: finalHospital || null,
+        tumor_type: String(selectedTumors.join(", ") || ""),
+        tumor_type_other: tumorTypeOther || null,
+        done_tests: selectedTests,
+        goals: selectedExpectations,
+        phone: String(basic.phone || ""),
+        consent: Boolean(basic.agreed),
+      });
+      console.log("Supabase 返回结果:", data);
+      console.log("Supabase 错误信息:", error);
+      if (error) {
+        console.error("❌ Supabase 报错详情:", error.message);
+        alert("提交失败：" + error.message);
+      } else {
+        console.log("✅ 提交成功！返回数据:", data);
+        alert("提交成功！");
+      }
+    } catch (err) {
+      console.error("Supabase insert failed:", err);
+    }
+
     setSubmitted(true);
     setScreen(4);
     window.scrollTo({ top: 0, behavior: "smooth" });
